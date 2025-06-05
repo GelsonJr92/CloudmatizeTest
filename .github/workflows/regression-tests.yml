@@ -28,8 +28,14 @@ jobs:
     - name: Install Chrome
       uses: browser-actions/setup-chrome@latest
       
+    - name: Compile main classes
+      run: mvn clean compile
+      
+    - name: Compile test classes
+      run: mvn test-compile
+      
     - name: Run Selenium tests
-      run: mvn clean test -Dbrowser=chrome -Dheadless=true
+      run: mvn test -Dbrowser=chrome -Dheadless=true
       
     - name: Upload screenshots on failure
       uses: actions/upload-artifact@v4

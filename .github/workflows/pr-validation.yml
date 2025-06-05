@@ -1,5 +1,5 @@
 # name: PR Validation
-
+# This workflow validates pull requests by running code quality checks, smoke tests, and security scans.
 # on:
 #   pull_request:
 #     branches: [main, develop]

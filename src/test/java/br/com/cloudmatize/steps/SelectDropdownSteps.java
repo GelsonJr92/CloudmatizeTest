@@ -8,7 +8,6 @@ import br.com.cloudmatize.driver.DriverFactory;
 import br.com.cloudmatize.reports.ExtentTestManager;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.openqa.selenium.By;
 import br.com.cloudmatize.utils.WebElementUtils;
 
 /**

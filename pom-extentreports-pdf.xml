@@ -1,0 +1,6 @@
+<!-- Dependência para ExtentReports PDF Reporter -->
+<dependency>
+    <groupId>com.aventstack</groupId>
+    <artifactId>extentreports-pdf</artifactId>
+    <version>5.0.9</version>
+</dependency>

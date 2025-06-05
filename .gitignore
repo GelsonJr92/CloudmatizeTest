@@ -1,0 +1,64 @@
+# Compiled class files
+*.class
+
+# Maven build directory
+target/
+
+# IDE files
+.idea/
+*.iml
+*.iws
+*.ipr
+.vscode/settings.json
+
+# Eclipse files
+.metadata
+.classpath
+.project
+.settings/
+
+# Log files
+*.log
+logs/
+
+# Test output directories
+test-output/
+reports/
+cucumber-reports/
+extent-reports/
+screenshots/
+
+# Temporary files
+*.tmp
+*.temp
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Maven wrapper files (optional)
+.mvn/wrapper/maven-wrapper.jar
+.mvn/wrapper/maven-wrapper.properties
+
+# Java heap dumps
+*.hprof
+
+# Build artifacts
+*.jar
+*.war
+*.ear
+
+# Node modules (if using any JS tools)
+node_modules/
+
+# Environment variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local

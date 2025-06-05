@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<extentreports>
+  <configuration>
+    <!-- Configurações de aparência -->
+    <theme>standard</theme>
+    <encoding>UTF-8</encoding>
+    <protocol>https</protocol>
+    
+    <!-- Funcionalidades habilitadas -->
+    <timelineEnabled>true</timelineEnabled>
+    <offlineMode>false</offlineMode>
+    <thumbnailForBase64>true</thumbnailForBase64>
+    
+    <!-- Títulos e nomes -->
+    <documentTitle>Cloudmatize Test Automation Report</documentTitle>
+    <reportName>Cloudmatize Selenium WebDriver Test Suite</reportName>
+    <timeStampFormat>dd/MM/yyyy HH:mm:ss</timeStampFormat>
+    
+    <!-- Configurações de CSS customizado -->
+    <css><![CDATA[
+      .test-title { 
+        font-weight: bold; 
+        color: #2c3e50; 
+      }
+      .step-pass { 
+        color: #27ae60; 
+      }
+      .step-fail { 
+        color: #e74c3c; 
+      }
+      .step-info { 
+        color: #3498db; 
+      }
+      .dashboard-view .panel-heading {
+        background-color: #34495e;
+        color: white;
+      }
+    ]]></css>
+    
+    <!-- JavaScript customizado -->
+    <js><![CDATA[
+      $(document).ready(function() {
+        // Customizações JavaScript podem ser adicionadas aqui
+        console.log('Cloudmatize Test Report carregado');
+      });
+    ]]></js>
+  </configuration>
+</extentreports>

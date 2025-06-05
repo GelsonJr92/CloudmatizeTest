@@ -1,0 +1,126 @@
+name: Regression Tests
+
+on:
+  schedule:
+    # Executa todos os dias às 02:00 UTC
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+    inputs:
+      browser:
+        description: 'Browser para executar os testes'
+        required: true
+        default: 'chrome'
+        type: choice
+        options:
+          - chrome
+          - firefox
+          - edge
+      environment:
+        description: 'Ambiente para executar os testes'
+        required: true
+        default: 'test'
+        type: choice
+        options:
+          - test
+          - staging
+          - production
+
+jobs:
+  regression-tests:
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        browser: [chrome, firefox, edge]
+      fail-fast: false
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Set up JDK 11
+      uses: actions/setup-java@v3
+      with:
+        java-version: '11'
+        distribution: 'temurin'
+    
+    - name: Cache Maven dependencies
+      uses: actions/cache@v3
+      with:
+        path: ~/.m2
+        key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+        restore-keys: ${{ runner.os }}-m2
+    
+    - name: Install Chrome
+      if: matrix.browser == 'chrome'
+      uses: browser-actions/setup-chrome@latest
+    
+    - name: Install Firefox
+      if: matrix.browser == 'firefox'
+      uses: browser-actions/setup-firefox@latest
+    
+    - name: Install Edge
+      if: matrix.browser == 'edge'
+      uses: browser-actions/setup-edge@latest
+    
+    - name: Run regression tests
+      run: mvn clean test -Dbrowser=${{ matrix.browser }} -Denvironment=${{ github.event.inputs.environment || 'test' }} -Dheadless=true
+      env:
+        BROWSER: ${{ matrix.browser }}
+        ENVIRONMENT: ${{ github.event.inputs.environment || 'test' }}
+        HEADLESS: true
+    
+    - name: Generate Allure Report
+      if: always()
+      run: mvn allure:report
+    
+    - name: Upload test results
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: test-results-${{ matrix.browser }}
+        path: |
+          target/surefire-reports/
+          target/cucumber-reports/
+          target/allure-results/
+          target/site/allure-maven-plugin/
+    
+    - name: Upload Extent Reports
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: extent-reports-${{ matrix.browser }}
+        path: target/extent-reports/
+    
+    - name: Publish Test Results
+      if: always()
+      uses: dorny/test-reporter@v1
+      with:
+        name: Test Results - ${{ matrix.browser }}
+        path: target/surefire-reports/*.xml
+        reporter: java-junit
+    
+    - name: Comment PR with test results
+      if: github.event_name == 'pull_request' && always()
+      uses: actions/github-script@v6
+      with:
+        script: |
+          const fs = require('fs');
+          const path = 'target/cucumber-reports/cucumber-report.json';
+          if (fs.existsSync(path)) {
+            const report = JSON.parse(fs.readFileSync(path, 'utf8'));
+            // Processar relatório e criar comentário
+            console.log('Test report generated successfully');
+          }
+
+  notification:
+    needs: regression-tests
+    runs-on: ubuntu-latest
+    if: failure()
+    
+    steps:
+    - name: Send failure notification
+      uses: actions/github-script@v6
+      with:
+        script: |
+          console.log('Regression tests failed. Consider sending notifications.');

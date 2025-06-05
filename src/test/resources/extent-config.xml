@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<extentreports>
+  <configuration>
+    <!-- Configurações de aparência para execução de testes -->
+    <theme>standard</theme>
+    <encoding>UTF-8</encoding>
+    <protocol>https</protocol>
+    
+    <!-- Funcionalidades habilitadas -->
+    <timelineEnabled>true</timelineEnabled>
+    <offlineMode>false</offlineMode>
+    <thumbnailForBase64>true</thumbnailForBase64>
+    
+    <!-- Títulos específicos para ambiente de teste -->
+    <documentTitle>Cloudmatize Test Execution Report</documentTitle>
+    <reportName>Cloudmatize Selenium Test Execution Suite</reportName>
+    <timeStampFormat>dd/MM/yyyy HH:mm:ss</timeStampFormat>
+    
+    <!-- Configurações de CSS customizado para testes -->
+    <css><![CDATA[
+      .test-title { 
+        font-weight: bold; 
+        color: #2c3e50; 
+      }
+      .step-pass { 
+        color: #27ae60; 
+        font-weight: bold;
+      }
+      .step-fail { 
+        color: #e74c3c; 
+        font-weight: bold;
+      }
+      .step-info { 
+        color: #3498db; 
+      }
+      .step-warning { 
+        color: #f39c12; 
+      }
+      .dashboard-view .panel-heading {
+        background-color: #2c3e50;
+        color: white;
+      }
+      .test-content {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      }
+    ]]></css>
+    
+    <!-- JavaScript para melhorar a experiência durante testes -->
+    <js><![CDATA[
+      $(document).ready(function() {
+        console.log('Cloudmatize Test Execution Report carregado');
+        
+        // Auto-refresh para testes em execução (opcional)
+        // setInterval(function(){ location.reload(); }, 30000);
+      });
+    ]]></js>
+  </configuration>
+</extentreports>

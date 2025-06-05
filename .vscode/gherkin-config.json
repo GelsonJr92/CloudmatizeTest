@@ -1,0 +1,13 @@
+{
+    "language": "gherkin",
+    "fileExtensions": [".feature"],
+    "syntaxHighlighting": {
+        "scopeName": "text.gherkin.feature",
+        "repository": {
+            "keywords": {
+                "match": "\\b(Feature|Scenario|Given|When|Then|And|But|Background|Outline|Examples)\\b",
+                "name": "keyword.control.gherkin"
+            }
+        }
+    }
+}

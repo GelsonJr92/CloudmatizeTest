@@ -1,0 +1,174 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Limpar projeto",
+            "type": "shell",
+            "command": "mvn",
+            "args": ["clean"],
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared"
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Compilar projeto",
+            "type": "shell",
+            "command": "mvn",
+            "args": ["compile"],
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared"
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Executar todos os testes",
+            "type": "shell",
+            "dependsOn": ["Limpar relatórios antigos ExtentReport"],
+            "command": "mvn",
+            "args": ["clean", "test"],
+            "group": "test",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared"
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Executar testes smoke",
+            "type": "shell",
+            "command": "mvn",
+            "args": ["clean", "test", "-Dtags=@smoke"],
+            "group": "test",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared"
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Executar testes por tag",
+            "type": "shell",
+            "command": "mvn",
+            "args": ["clean", "test", "-Dtags=${input:testTag}"],
+            "group": "test",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared"
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Executar com browser específico",
+            "type": "shell",
+            "command": "mvn",
+            "args": ["clean", "test", "-Dbrowser=${input:browserType}"],
+            "group": "test",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared"
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Gerar relatório Allure",
+            "type": "shell",
+            "command": "mvn",
+            "args": ["allure:serve"],
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared"
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Instalar dependências",
+            "type": "shell",
+            "command": "mvn",
+            "args": ["dependency:resolve"],
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared"
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Verificar dependências",
+            "type": "shell",
+            "command": "mvn",
+            "args": ["dependency:tree"],
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared"
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Executar análise de código",
+            "type": "shell",
+            "command": "mvn",
+            "args": ["spotbugs:check", "checkstyle:check"],
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared"
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Limpar relatórios antigos ExtentReport",
+            "type": "shell",
+            "command": "if (Test-Path ./target/extent-reports) { Get-ChildItem -Path ./target/extent-reports/*.html | Remove-Item -Force }",
+            "problemMatcher": [],
+            "presentation": {
+                "reveal": "always"
+            }
+        }
+    ],
+    "inputs": [
+        {
+            "id": "testTag",
+            "description": "Tag dos testes para executar",
+            "default": "@smoke",
+            "type": "promptString"
+        },
+        {
+            "id": "browserType",
+            "description": "Tipo de browser",
+            "default": "chrome",
+            "type": "pickString",
+            "options": [
+                "chrome",
+                "firefox",
+                "edge"
+            ]
+        }
+    ]
+}

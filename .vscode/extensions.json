@@ -1,0 +1,9 @@
+{
+    "recommendations": [
+        "alexkrechik.cucumberautocomplete",
+        "vscjava.vscode-java-pack",
+        "ms-vscode.test-adapter-converter",
+        "hbenl.vscode-test-explorer",
+        "ms-vscode.powershell"
+    ]
+}

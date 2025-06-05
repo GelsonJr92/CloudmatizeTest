@@ -1,0 +1,7 @@
+--glue br.com.cloudmatize.steps
+--glue br.com.cloudmatize.hooks
+--features src/test/resources/features
+--plugin pretty
+--plugin html:target/cucumber-reports/html
+--plugin json:target/cucumber-reports/Cucumber.json
+--plugin junit:target/cucumber-reports/Cucumber.xml

@@ -3,6 +3,7 @@ package br.com.cloudmatize.driver;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
+import java.io.File;
 import java.util.UUID;
 
 public class DriverFactory {
@@ -37,10 +38,19 @@ public class DriverFactory {
             options.addArguments("--allow-running-insecure-content");
             options.addArguments("--single-process");
             options.addArguments("--remote-debugging-port=9222");
-            
-            // Cria diretório único para cada instância (compatível com Windows/Linux)
+              // Cria diretório único para cada instância do Chrome (compatível com Linux/Windows)
             String tempDir = System.getProperty("java.io.tmpdir");
+            if (!tempDir.endsWith(File.separator)) {
+                tempDir += File.separator;
+            }
             String uniqueUserDataDir = tempDir + "chrome-user-data-" + UUID.randomUUID().toString();
+            
+            // Cria o diretório se não existir
+            File userDataDir = new File(uniqueUserDataDir);
+            if (!userDataDir.exists()) {
+                userDataDir.mkdirs();
+            }
+            
             options.addArguments("--user-data-dir=" + uniqueUserDataDir);
             
             // Define tamanho da janela para headless

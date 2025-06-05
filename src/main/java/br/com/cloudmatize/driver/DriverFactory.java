@@ -2,6 +2,8 @@ package br.com.cloudmatize.driver;
 
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.chrome.ChromeOptions;
+import java.util.UUID;
 
 public class DriverFactory {
     
@@ -12,17 +14,53 @@ public class DriverFactory {
     }
     
     public static WebDriver initDriver() {
-        WebDriver driver = new ChromeDriver();
-        // Maximiza a janela (ou ajusta para headless, se necessário)
-        try {
-            // Se quiser condicionar ao headless, adicione lógica aqui
-            driver.manage().window().maximize();
-        } catch (Exception e) {
-            // Em caso de erro, tenta ajustar para 1920x1080
-            try {
-                driver.manage().window().setSize(new org.openqa.selenium.Dimension(1920, 1080));
-            } catch (Exception ignored) {}
+        ChromeOptions options = new ChromeOptions();
+        
+        // Configurações para ambientes CI/CD
+        String ciEnv = System.getenv("CI");
+        String githubActions = System.getenv("GITHUB_ACTIONS");
+          if ("true".equals(ciEnv) || "true".equals(githubActions)) {
+            // Argumentos essenciais para CI
+            options.addArguments("--headless");
+            options.addArguments("--no-sandbox");
+            options.addArguments("--disable-dev-shm-usage");
+            options.addArguments("--disable-gpu");
+            options.addArguments("--disable-software-rasterizer");
+            options.addArguments("--disable-background-timer-throttling");
+            options.addArguments("--disable-backgrounding-occluded-windows");
+            options.addArguments("--disable-renderer-backgrounding");
+            options.addArguments("--disable-features=TranslateUI,VizDisplayCompositor");
+            options.addArguments("--disable-ipc-flooding-protection");
+            options.addArguments("--disable-extensions");
+            options.addArguments("--disable-plugins");
+            options.addArguments("--disable-web-security");
+            options.addArguments("--allow-running-insecure-content");
+            options.addArguments("--single-process");
+            options.addArguments("--remote-debugging-port=9222");
+            
+            // Cria diretório único para cada instância (compatível com Windows/Linux)
+            String tempDir = System.getProperty("java.io.tmpdir");
+            String uniqueUserDataDir = tempDir + "chrome-user-data-" + UUID.randomUUID().toString();
+            options.addArguments("--user-data-dir=" + uniqueUserDataDir);
+            
+            // Define tamanho da janela para headless
+            options.addArguments("--window-size=1920,1080");
         }
+        
+        WebDriver driver = new ChromeDriver(options);
+        
+        // Maximiza a janela apenas se não estiver em headless
+        if (!"true".equals(ciEnv) && !"true".equals(githubActions)) {
+            try {
+                driver.manage().window().maximize();
+            } catch (Exception e) {
+                // Em caso de erro, tenta ajustar para 1920x1080
+                try {
+                    driver.manage().window().setSize(new org.openqa.selenium.Dimension(1920, 1080));
+                } catch (Exception ignored) {}
+            }
+        }
+        
         driverThreadLocal.set(driver);
         return driver;
     }

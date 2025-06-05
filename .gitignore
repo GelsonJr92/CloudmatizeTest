@@ -23,7 +23,7 @@ logs/
 
 # Test output directories
 test-output/
-reports/
+/reports/
 cucumber-reports/
 extent-reports/
 screenshots/

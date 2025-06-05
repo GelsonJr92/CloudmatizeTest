@@ -1,4 +1,4 @@
-name: Selenium E2E Tests
+name: Selenium Tests
 
 on:
   push:
@@ -10,143 +10,161 @@ on:
     - cron: '0 2 * * *'
 
 jobs:
-  # Job para testes de automação com Selenium
   selenium-tests:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-      
-    - name: Set up JDK 17
-      uses: actions/setup-java@v4
-      with:
-        java-version: '17'
-        distribution: 'temurin'
-        cache: 'maven'
+      - name: Checkout code
+        uses: actions/checkout@v4
         
-    - name: Install Chrome
-      uses: browser-actions/setup-chrome@latest
-      
-    - name: Compile main classes
-      run: mvn clean compile
-      
-    - name: Compile test classes
-      run: mvn test-compile
-      
-    - name: Run Selenium tests
-      run: mvn test -Dbrowser=chrome -Dheadless=true
-      
-    - name: Upload screenshots on failure
-      uses: actions/upload-artifact@v4
-      if: failure()
-      with:
-        name: selenium-screenshots
-        path: target/screenshots
-        if-no-files-found: ignore
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: maven
+          
+      - name: Install Chrome
+        uses: browser-actions/setup-chrome@v1
+        with:
+          chrome-version: stable
+          
+      - name: Setup Chrome environment
+        run: |
+          # Verificar instalação do Chrome
+          google-chrome --version
+          which google-chrome
+          
+          # Criar diretórios necessários com permissões adequadas
+          sudo mkdir -p /tmp/chrome-temp
+          sudo chmod 777 /tmp/chrome-temp
+          
+          # Criar diretórios de relatórios
+          mkdir -p target/screenshots
+          mkdir -p target/extent-reports  
+          mkdir -p target/cucumber-reports
+          
+      - name: Clean and compile
+        run: mvn clean compile test-compile
         
-    - name: Upload extent reports
-      uses: actions/upload-artifact@v4
-      if: always()
-      with:
-        name: extent-reports
-        path: target/extent-reports
-        if-no-files-found: ignore
-        
-    - name: Upload cucumber reports
-      uses: actions/upload-artifact@v4
-      if: always()
-      with:
-        name: cucumber-reports
-        path: target/cucumber-reports
-        if-no-files-found: ignore
+      - name: Run Selenium tests
+        run: mvn test
+        env:
+          CI: true
+          GITHUB_ACTIONS: true
+          # Define variáveis específicas para o Chrome em CI
+          CHROME_USER_DATA_DIR: /tmp/chrome-temp
+          
+      - name: Upload screenshots on failure
+        uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: test-screenshots
+          path: target/screenshots
+          if-no-files-found: ignore
+          
+      - name: Upload extent reports
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: extent-reports
+          path: target/extent-reports
+          if-no-files-found: ignore
+          
+      - name: Upload cucumber reports
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: cucumber-reports
+          path: target/cucumber-reports
+          if-no-files-found: ignore
 
-  # Job para geração de relatórios consolidados
   test-summary:
     runs-on: ubuntu-latest
     needs: [selenium-tests]
     if: always()
     
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-      
-    - name: Set up JDK 17
-      uses: actions/setup-java@v4
-      with:
-        java-version: '17'
-        distribution: 'temurin'
-        cache: 'maven'
+      - name: Checkout code
+        uses: actions/checkout@v4
         
-    - name: Download test artifacts
-      uses: actions/download-artifact@v4
-      with:
-        name: cucumber-reports
-        path: target/cucumber-reports
-      continue-on-error: true
-        
-    - name: Generate combined report
-      run: |
-        echo "Generating combined test report..."
-        ls -la target/cucumber-reports/ || echo "No cucumber reports found"
-        
-    - name: Upload combined report
-      uses: actions/upload-artifact@v4
-      with:
-        name: combined-test-report
-        path: target/
-        
-    - name: Comment PR with test results
-      if: github.event_name == 'pull_request'
-      uses: actions/github-script@v7
-      with:
-        script: |
-          const fs = require('fs');
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: 'maven'
           
-          // Verificar se o arquivo de relatório existe
-          const reportPath = 'target/cucumber-reports/cucumber-report.json';
-          if (fs.existsSync(reportPath)) {
-            const report = JSON.parse(fs.readFileSync(reportPath, 'utf8'));
+      - name: Download test artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: cucumber-reports
+          path: target/cucumber-reports
+        continue-on-error: true
+          
+      - name: Generate combined report
+        run: |
+          echo "Generating combined test report..."
+          ls -la target/cucumber-reports/ || echo "No cucumber reports found"
+          
+      - name: Upload combined report
+        uses: actions/upload-artifact@v4
+        with:
+          name: combined-test-report
+          path: target/
+          
+      - name: Comment PR with test results
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
             
-            let totalScenarios = 0;
-            let passedScenarios = 0;
-            let failedScenarios = 0;
-            
-            report.forEach(feature => {
-              feature.elements.forEach(scenario => {
-                totalScenarios++;
-                const failed = scenario.steps.some(step => step.result.status === 'failed');
-                if (failed) {
-                  failedScenarios++;
-                } else {
-                  passedScenarios++;
-                }
-              });
-            });
-            
-            const successRate = totalScenarios > 0 ? ((passedScenarios / totalScenarios) * 100).toFixed(1) : 0;
+            // Verificar se o arquivo de relatório existe
+            const reportPath = 'target/cucumber-reports/cucumber-report.json';
+            if (fs.existsSync(reportPath)) {
+              const report = JSON.parse(fs.readFileSync(reportPath, 'utf8'));
               
-            const comment = `## Resultados dos Testes Selenium
-            
-            | Métrica | Valor |
-            |---------|-------|
-            | Cenários Aprovados | ${passedScenarios} |
-            | Cenários Falharam | ${failedScenarios} |
-            | Taxa de Sucesso | ${successRate}% |
-            
-            ${failedScenarios > 0 ? '⚠️ Alguns testes falharam. Verifique o relatório detalhado.' : '✅ Todos os testes passaram!'}
-            
-            **Detalhes:**
-            - Total de Cenários: ${totalScenarios}
-            - Features Executadas: ${report.length}
-            `;
-            
-            github.rest.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: comment
-            });
-          } else {
-            console.log('Arquivo de relatório não encontrado:', reportPath);
-          }
+              let totalScenarios = 0;
+              let passedScenarios = 0;
+              let failedScenarios = 0;
+              
+              report.forEach(feature => {
+                feature.elements.forEach(scenario => {
+                  totalScenarios++;
+                  const failed = scenario.steps.some(step => step.result.status === 'failed');
+                  if (failed) {
+                    failedScenarios++;
+                  } else {
+                    passedScenarios++;
+                  }
+                });
+              });
+              
+              const successRate = totalScenarios > 0 ? ((passedScenarios / totalScenarios) * 100).toFixed(1) : 0;
+                
+              const comment = `## Resultados dos Testes Selenium
+              
+              | Métrica | Valor |
+              |---------|-------|
+              | Cenários Aprovados | ${passedScenarios} |
+              | Cenários Falharam | ${failedScenarios} |
+              | Taxa de Sucesso | ${successRate}% |
+              
+              ${failedScenarios > 0 ? '⚠️ Alguns testes falharam. Verifique o relatório detalhado.' : '✅ Todos os testes passaram!'}
+              
+              **Detalhes:**
+              - Total de Cenários: ${totalScenarios}
+              - Features Executadas: ${report.length}
+              `;
+              
+              github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: comment
+              });
+            } else {
+              console.log('Arquivo de relatório não encontrado:', reportPath);
+            }

@@ -23,15 +23,13 @@ public class ExtentTestManager {
     private static final Logger logger = LogManager.getLogger(ExtentTestManager.class);
     
     private static ExtentReports extent;
-    private static final ThreadLocal<ExtentTest> extentTest = new ThreadLocal<>();
-    private static final String REPORTS_PATH = "test-output/extent-reports/";
-    private static final String SCREENSHOTS_PATH = "test-output/screenshots/";
+    private static final ThreadLocal<ExtentTest> extentTest = new ThreadLocal<>();    private static final String REPORTS_PATH = "target/extent-reports/";
+    private static final String SCREENSHOTS_PATH = "target/screenshots/";
     
     static {
         setupExtentReports();
     }
-    
-    /**
+      /**
      * Configura o ExtentReports
      */
     private static void setupExtentReports() {
@@ -39,13 +37,19 @@ public class ExtentTestManager {
             // Criar diretório de relatórios se não existir
             File reportsDir = new File(REPORTS_PATH);
             if (!reportsDir.exists()) {
-                reportsDir.mkdirs();
+                boolean created = reportsDir.mkdirs();
+                System.out.println("=== EXTENT REPORTS SETUP ===");
+                System.out.println("Criando diretório: " + reportsDir.getAbsolutePath());
+                System.out.println("Diretório criado: " + created);
             }
             
             // Configurar o reporter
             String timestamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
             String reportName = "TestReport_" + timestamp + ".html";
-            ExtentSparkReporter sparkReporter = new ExtentSparkReporter(REPORTS_PATH + reportName);
+            String fullReportPath = REPORTS_PATH + reportName;
+            
+            System.out.println("Configurando relatório: " + fullReportPath);
+            ExtentSparkReporter sparkReporter = new ExtentSparkReporter(fullReportPath);
             
             // Configurações do reporter
             sparkReporter.config().setTheme(Theme.STANDARD);
@@ -166,14 +170,30 @@ public class ExtentTestManager {
             logger.error("Erro ao capturar screenshot: {}", e.getMessage(), e);
         }
     }
-    
-    /**
+      /**
      * Finaliza todos os testes e gera o relatório
      */
     public static synchronized void flush() {
         if (extent != null) {
+            System.out.println("=== FINALIZANDO EXTENT REPORTS ===");
+            System.out.println("Gerando relatório no diretório: " + REPORTS_PATH);
             extent.flush();
             logger.info("Relatório ExtentReports finalizado");
+            System.out.println("=== EXTENT REPORTS FINALIZADO ===");
+            
+            // Verificar se arquivos foram gerados
+            File reportsDir = new File(REPORTS_PATH);
+            if (reportsDir.exists()) {
+                File[] files = reportsDir.listFiles();
+                System.out.println("Arquivos gerados: " + (files != null ? files.length : 0));
+                if (files != null) {
+                    for (File file : files) {
+                        System.out.println("- " + file.getName() + " (" + file.length() + " bytes)");
+                    }
+                }
+            }
+        } else {
+            System.out.println("=== AVISO: ExtentReports não foi inicializado ===");
         }
     }
     

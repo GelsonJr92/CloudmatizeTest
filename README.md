@@ -241,5 +241,5 @@ Para questões e suporte, entre em contato com a equipe de automação.
 
 ---
 
-**Desenvolvido com ❤️ pela equipe Cloudmatize**
+
 

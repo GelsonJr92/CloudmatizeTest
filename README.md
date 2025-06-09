@@ -235,9 +235,7 @@ page.load.timeout=60
 4. Push para a branch (`git push origin feature/nova-funcionalidade`)
 5. Abra um Pull Request
 
-## 📞 Suporte
 
-Para questões e suporte, entre em contato com a equipe de automação.
 
 ---
 

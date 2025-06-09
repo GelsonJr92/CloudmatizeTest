@@ -24,8 +24,7 @@ public class DriverFactory {
         
         if ("true".equals(ciEnv) || "true".equals(githubActions)) {
             System.out.println("=== CONFIGURANDO CHROME PARA CI ===");
-            
-            // Argumentos essenciais para CI sem conflitos
+              // Argumentos essenciais para CI sem conflitos
             options.addArguments("--headless");
             options.addArguments("--no-sandbox");
             options.addArguments("--disable-dev-shm-usage");
@@ -42,6 +41,22 @@ public class DriverFactory {
             options.addArguments("--allow-running-insecure-content");
             options.addArguments("--disable-blink-features=AutomationControlled");
             options.addArguments("--disable-features=VizDisplayCompositor");
+            
+            // Argumentos adicionais para melhorar performance e estabilidade no CI
+            options.addArguments("--disable-logging");
+            options.addArguments("--disable-default-apps");
+            options.addArguments("--disable-sync");
+            options.addArguments("--no-first-run");
+            options.addArguments("--no-default-browser-check");
+            options.addArguments("--disable-component-update");
+            options.addArguments("--disable-background-networking");
+            options.addArguments("--disable-client-side-phishing-detection");
+            options.addArguments("--disable-hang-monitor");
+            options.addArguments("--disable-popup-blocking");
+            options.addArguments("--disable-prompt-on-repost");
+            options.addArguments("--disable-translate");
+            options.addArguments("--memory-pressure-off");
+            options.addArguments("--max_old_space_size=4096");
             
             // REMOVIDO: --single-process (causa conflitos em CI paralelos)
             // REMOVIDO: --remote-debugging-port=9222 (porta fixa causa conflitos)
@@ -74,11 +89,19 @@ public class DriverFactory {
         try {
             System.out.println("=== INICIANDO CHROME DRIVER ===");
             driver = new ChromeDriver(options);
-            
-            // Configurar timeouts para estabilidade
-            driver.manage().timeouts().implicitlyWait(java.time.Duration.ofSeconds(10));
-            driver.manage().timeouts().pageLoadTimeout(java.time.Duration.ofSeconds(30));
-            driver.manage().timeouts().scriptTimeout(java.time.Duration.ofSeconds(30));
+              // Configurar timeouts estendidos para ambiente CI
+            if ("true".equals(ciEnv) || "true".equals(githubActions)) {
+                // Timeouts mais generosos para CI (runners podem ser mais lentos)
+                driver.manage().timeouts().implicitlyWait(java.time.Duration.ofSeconds(15));
+                driver.manage().timeouts().pageLoadTimeout(java.time.Duration.ofSeconds(60));
+                driver.manage().timeouts().scriptTimeout(java.time.Duration.ofSeconds(60));
+                System.out.println("Timeouts configurados para CI: Page=60s, Script=60s, Implicit=15s");
+            } else {
+                // Timeouts padrão para execução local
+                driver.manage().timeouts().implicitlyWait(java.time.Duration.ofSeconds(10));
+                driver.manage().timeouts().pageLoadTimeout(java.time.Duration.ofSeconds(30));
+                driver.manage().timeouts().scriptTimeout(java.time.Duration.ofSeconds(30));
+            }
             
             // Maximiza a janela apenas se não estiver em headless
             if (!"true".equals(ciEnv) && !"true".equals(githubActions)) {
